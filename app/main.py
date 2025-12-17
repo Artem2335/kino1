@@ -10,6 +10,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from app.users.router import router as router_users
 from app.movies.router import router as router_movies
+from app.reviews.router import router as router_reviews
+from app.favorites.router import router as router_favorites
 from app import db
 import os
 
@@ -26,7 +28,7 @@ if not Path(__file__).parent.parent.joinpath('kinovzor.db').exists():
 app = FastAPI(
     title="KinoVzor API",
     description="Movie review and rating platform",
-    version="1.0.0"
+    version="2.0.0"
 )
 
 # Enable CORS
@@ -41,6 +43,8 @@ app.add_middleware(
 # Include routers FIRST (before static files)
 app.include_router(router_users)
 app.include_router(router_movies)
+app.include_router(router_reviews)
+app.include_router(router_favorites)
 
 # Get the correct path for static files
 STATIC_DIR = Path(__file__).parent / "static"
