@@ -52,15 +52,10 @@ app.include_router(router_favorites)
 STATIC_DIR = Path(__file__).parent / "static"
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 
-# Mount static files
-if STATIC_DIR.exists():
-    app.mount('/static', StaticFiles(directory=str(STATIC_DIR)), 'static')
-else:
-    print(f"\n⚠️ Warning: Static directory not found at {STATIC_DIR}")
-
-# Setup Jinja2 templates
+# Setup Jinja2 templates BEFORE mounting static
 if TEMPLATES_DIR.exists():
     templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
+    print(f"✅ Templates directory found at {TEMPLATES_DIR}")
 else:
     print(f"\n⚠️ Warning: Templates directory not found at {TEMPLATES_DIR}")
     templates = None
@@ -73,6 +68,22 @@ async def root(request: Request):
     else:
         # Fallback if templates directory doesn't exist
         return RedirectResponse(url="/static/index.html", status_code=status.HTTP_303_SEE_OTHER)
+
+# Compatibility route for old /static/index.html requests
+@app.get('/static/index.html')
+async def static_index(request: Request):
+    """Redirect /static/index.html to / for backwards compatibility"""
+    if templates:
+        return templates.TemplateResponse("index.html", {"request": request})
+    else:
+        return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+
+# Mount static files AFTER routes
+if STATIC_DIR.exists():
+    app.mount('/static', StaticFiles(directory=str(STATIC_DIR)), 'static')
+    print(f"✅ Static directory found at {STATIC_DIR}")
+else:
+    print(f"\n⚠️ Warning: Static directory not found at {STATIC_DIR}")
 
 if __name__ == "__main__":
     import uvicorn
