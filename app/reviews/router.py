@@ -9,6 +9,7 @@ router = APIRouter(tags=["reviews"])
 class ReviewCreate(BaseModel):
     text: str
     rating: Optional[int] = None
+    user_id: int  # Add user_id to the model
 
 
 class ReviewUpdate(BaseModel):
@@ -30,16 +31,21 @@ def get_movie_reviews(movie_id: int, approved_only: bool = Query(False)):
 
 
 @router.post("/api/movies/{movie_id}/reviews", operation_id="create_movie_review")
-def create_review(movie_id: int, user_id: int, data: ReviewCreate):
+def create_review(movie_id: int, data: ReviewCreate):
     """Create a review for a movie"""
     # Check if movie exists
     movie = db.get_movie_by_id(movie_id)
     if not movie:
         raise HTTPException(status_code=404, detail="Movie not found")
     
+    # Check if user exists
+    user = db.get_user_by_id(data.user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
     review = db.create_review(
         movie_id=movie_id,
-        user_id=user_id,
+        user_id=data.user_id,
         text=data.text,
         rating=data.rating
     )
