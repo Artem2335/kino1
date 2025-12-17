@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional
 from app import db
 
 router = APIRouter(prefix="/api/movies", tags=["movies"])
@@ -21,9 +21,15 @@ class MovieUpdate(BaseModel):
     poster_url: Optional[str] = None
 
 
+class ReviewCreate(BaseModel):
+    text: str
+    rating: Optional[int] = None
+    user_id: int
+
+
 # ========== MOVIES ==========
 
-@router.get("/")
+@router.get("/", operation_id="list_all_movies")
 def get_movies(genre: Optional[str] = Query(None), sort: str = Query("popular")):
     """Get all movies with optional filtering and sorting"""
     movies = db.get_all_movies()
@@ -39,7 +45,7 @@ def get_movies(genre: Optional[str] = Query(None), sort: str = Query("popular"))
     
     return movies
 
-@router.get("/stats")
+@router.get("/stats", operation_id="get_site_stats")
 def get_stats():
     """Get overall site statistics"""
     movies = db.get_all_movies()
@@ -56,7 +62,7 @@ def get_stats():
         "reviews_count": reviews_count
     }
 
-@router.get("/{movie_id}")
+@router.get("/{movie_id}", operation_id="get_movie_by_id")
 def get_movie(movie_id: int):
     """Get a single movie by ID"""
     movie = db.get_movie_by_id(movie_id)
@@ -64,9 +70,15 @@ def get_movie(movie_id: int):
     if not movie:
         raise HTTPException(status_code=404, detail="Movie not found")
     
-    return movie
+    # Add rating stats to movie
+    stats = db.get_rating_stats(movie_id)
+    movie_dict = dict(movie) if hasattr(movie, '__getitem__') else movie
+    movie_dict['rating'] = stats.get('average')
+    movie_dict['rating_count'] = stats.get('count')
+    
+    return movie_dict
 
-@router.get("/{movie_id}/reviews")
+@router.get("/{movie_id}/reviews", operation_id="get_movie_reviews_endpoint")
 def get_movie_reviews(movie_id: int, approved_only: bool = Query(False)):
     """Get reviews for a specific movie"""
     movie = db.get_movie_by_id(movie_id)
@@ -76,27 +88,27 @@ def get_movie_reviews(movie_id: int, approved_only: bool = Query(False)):
     reviews = db.get_movie_reviews(movie_id, approved_only=approved_only)
     return reviews
 
-@router.post("/{movie_id}/reviews")
-def create_movie_review(movie_id: int, user_id: int, text: str, rating: Optional[int] = None):
+@router.post("/{movie_id}/reviews", operation_id="create_review_for_movie")
+def create_movie_review(movie_id: int, data: ReviewCreate):
     """Create a review for a movie (v2.0.0: ratings are part of reviews)"""
     movie = db.get_movie_by_id(movie_id)
     if not movie:
         raise HTTPException(status_code=404, detail="Movie not found")
     
-    review_data = {
-        "text": text,
-        "rating": rating
-    }
+    # Check if user exists
+    user = db.get_user_by_id(data.user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
     
     review = db.create_review(
         movie_id=movie_id,
-        user_id=user_id,
-        text=text,
-        rating=rating
+        user_id=data.user_id,
+        text=data.text,
+        rating=data.rating
     )
     return review
 
-@router.get("/{movie_id}/rating-stats")
+@router.get("/{movie_id}/rating-stats", operation_id="get_movie_rating_stats")
 def get_movie_rating_stats(movie_id: int):
     """Get rating statistics for a movie (calculated from review ratings in v2.0.0)"""
     movie = db.get_movie_by_id(movie_id)
@@ -106,7 +118,7 @@ def get_movie_rating_stats(movie_id: int):
     stats = db.get_rating_stats(movie_id)
     return stats
 
-@router.get("/user/{user_id}/favorites")
+@router.get("/user/{user_id}/favorites", operation_id="get_user_favorites_from_movies")
 def get_user_favorites(user_id: int):
     """Get favorite movies for a specific user"""
     user = db.get_user_by_id(user_id)
@@ -116,7 +128,7 @@ def get_user_favorites(user_id: int):
     favorites = db.get_user_favorites(user_id)
     return favorites
 
-@router.post("/{movie_id}/favorites")
+@router.post("/{movie_id}/favorites", operation_id="add_to_user_favorites")
 def add_favorite(movie_id: int, user_id: int):
     """Add movie to user's favorites"""
     movie = db.get_movie_by_id(movie_id)
@@ -130,7 +142,7 @@ def add_favorite(movie_id: int, user_id: int):
     db.add_favorite(movie_id, user_id)
     return {"status": "added"}
 
-@router.delete("/{movie_id}/favorites")
+@router.delete("/{movie_id}/favorites", operation_id="remove_from_user_favorites")
 def remove_favorite(movie_id: int, user_id: int):
     """Remove movie from user's favorites"""
     movie = db.get_movie_by_id(movie_id)
@@ -144,7 +156,7 @@ def remove_favorite(movie_id: int, user_id: int):
     db.remove_favorite(movie_id, user_id)
     return {"status": "removed"}
 
-@router.post("/")
+@router.post("/", operation_id="create_new_movie")
 def create_movie(data: MovieCreate):
     """Create a new movie (admin only)"""
     movie = db.create_movie(
@@ -156,7 +168,7 @@ def create_movie(data: MovieCreate):
     )
     return movie
 
-@router.put("/{movie_id}")
+@router.put("/{movie_id}", operation_id="update_movie_by_id")
 def update_movie(movie_id: int, data: MovieUpdate):
     """Update a movie (admin only)"""
     movie = db.get_movie_by_id(movie_id)
@@ -173,7 +185,7 @@ def update_movie(movie_id: int, data: MovieUpdate):
     )
     return updated_movie
 
-@router.delete("/{movie_id}")
+@router.delete("/{movie_id}", operation_id="delete_movie_by_id")
 def delete_movie(movie_id: int):
     """Delete a movie (admin only). Cascades to delete all related reviews and favorites."""
     movie = db.get_movie_by_id(movie_id)
