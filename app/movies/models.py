@@ -1,4 +1,4 @@
-from sqlalchemy import text, String, Integer, Float, Text
+from sqlalchemy import String, Integer, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base, int_pk
 from typing import List
@@ -12,7 +12,7 @@ class Movie(Base):
     year: Mapped[int] = mapped_column(Integer, nullable=False)
     poster_url: Mapped[str] = mapped_column(String(500), nullable=True)
 
-    # Relationships
+    # Relationships - imported from their respective packages
     reviews: Mapped[List["Review"]] = relationship("Review", back_populates="movie", cascade="all, delete-orphan", foreign_keys="Review.movie_id")
     favorites: Mapped[List["Favorite"]] = relationship("Favorite", back_populates="movie", cascade="all, delete-orphan", foreign_keys="Favorite.movie_id")
 
