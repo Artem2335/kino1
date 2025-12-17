@@ -5,7 +5,7 @@ router = APIRouter(tags=["favorites"])
 
 
 # User favorites - nested under movies
-@router.get("/api/movies/user/{user_id}/favorites")
+@router.get("/api/movies/user/{user_id}/favorites", operation_id="get_user_favorites")
 def get_user_favorites(user_id: int):
     """Get all favorite movies for a user"""
     favorites = db.get_user_favorites(user_id)
@@ -13,7 +13,7 @@ def get_user_favorites(user_id: int):
 
 
 # Movie favorites - nested under movies
-@router.post("/api/movies/{movie_id}/favorites")
+@router.post("/api/movies/{movie_id}/favorites", operation_id="add_movie_to_favorites")
 def add_to_favorites(movie_id: int, user_id: int):
     """Add a movie to user's favorites"""
     # Check if movie exists
@@ -29,14 +29,14 @@ def add_to_favorites(movie_id: int, user_id: int):
     return result
 
 
-@router.delete("/api/movies/{movie_id}/favorites")
+@router.delete("/api/movies/{movie_id}/favorites", operation_id="remove_movie_from_favorites")
 def remove_from_favorites(movie_id: int, user_id: int):
     """Remove a movie from user's favorites"""
     result = db.remove_favorite(movie_id, user_id)
     return result
 
 
-@router.get("/api/movies/{movie_id}/is-favorite")
+@router.get("/api/movies/{movie_id}/is-favorite", operation_id="check_is_favorite")
 def is_favorite(movie_id: int, user_id: int):
     """Check if a movie is in user's favorites"""
     is_fav = db.is_favorite(movie_id, user_id)
@@ -44,14 +44,14 @@ def is_favorite(movie_id: int, user_id: int):
 
 
 # Alternative direct routes for favorites
-@router.get("/api/favorites/{user_id}")
+@router.get("/api/favorites/{user_id}", operation_id="get_user_favorites_direct")
 def get_user_favorites_direct(user_id: int):
     """Get all favorite movies for a user (direct route)"""
     favorites = db.get_user_favorites(user_id)
     return favorites
 
 
-@router.post("/api/favorites/{movie_id}")
+@router.post("/api/favorites/{movie_id}", operation_id="add_to_favorites_direct")
 def add_to_favorites_direct(movie_id: int, user_id: int):
     """Add a movie to user's favorites (direct route)"""
     # Check if movie exists
@@ -67,7 +67,7 @@ def add_to_favorites_direct(movie_id: int, user_id: int):
     return result
 
 
-@router.delete("/api/favorites/{movie_id}")
+@router.delete("/api/favorites/{movie_id}", operation_id="remove_from_favorites_direct")
 def remove_from_favorites_direct(movie_id: int, user_id: int):
     """Remove a movie from user's favorites (direct route)"""
     result = db.remove_favorite(movie_id, user_id)
