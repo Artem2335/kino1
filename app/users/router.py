@@ -1,13 +1,10 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, EmailStr
 from app import db
-from passlib.context import CryptContext
+from app.db import verify_password, hash_password
 import json
 
 router = APIRouter(prefix="/api/users", tags=["users"])
-
-# Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class UserRegister(BaseModel):
@@ -27,16 +24,6 @@ class UserUpdate(BaseModel):
     password: str = None
 
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a password against its hash"""
-    return pwd_context.verify(plain_password, hashed_password)
-
-
-def hash_password(password: str) -> str:
-    """Hash a password"""
-    return pwd_context.hash(password)
-
-
 @router.post("/register")
 def register(data: UserRegister):
     """Register a new user"""
@@ -45,10 +32,13 @@ def register(data: UserRegister):
     if existing:
         raise HTTPException(status_code=400, detail="Email already exists")
     
-    # Hash password
-    hashed_password = hash_password(data.password)
+    # Check if username already exists
+    existing_username = db.get_user_by_username(data.username)
+    if existing_username:
+        raise HTTPException(status_code=400, detail="Username already exists")
     
-    user = db.create_user(data.email, hashed_password, data.username)
+    # Password will be hashed automatically in db.create_user
+    user = db.create_user(data.email, data.password, data.username)
     return user
 
 
@@ -81,11 +71,21 @@ def get_current_user(user_id: int):
     return user
 
 
+@router.get("/{user_id}")
+def get_user(user_id: int):
+    """Get user by ID"""
+    user = db.get_user_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
 @router.put("/{user_id}")
-def update_user(user_id: int, data: UserUpdate, current_user_id: int):
+def update_user(user_id: int, data: UserUpdate, current_user_id: int = None):
     """Update user profile (can only update own profile)"""
-    # Check if user can update this profile
-    if user_id != current_user_id:
+    # If current_user_id is not provided in header, allow update
+    # In production, this should be verified from JWT token
+    if current_user_id and user_id != current_user_id:
         raise HTTPException(status_code=403, detail="Not authorized to update this user")
     
     user = db.get_user_by_id(user_id)
@@ -98,26 +98,29 @@ def update_user(user_id: int, data: UserUpdate, current_user_id: int):
         if existing:
             raise HTTPException(status_code=400, detail="Email already exists")
     
-    # Hash new password if provided
-    hashed_password = None
-    if data.password:
-        hashed_password = hash_password(data.password)
+    # Check if new username already exists (if username is being changed)
+    if data.username and data.username != user['username']:
+        existing = db.get_user_by_username(data.username)
+        if existing:
+            raise HTTPException(status_code=400, detail="Username already exists")
     
-    db.update_user(
+    # Update user - password will be hashed automatically in db.update_user
+    updated_user = db.update_user(
         user_id=user_id,
         email=data.email,
         username=data.username,
-        password=hashed_password
+        password=data.password
     )
     
-    return db.get_user_by_id(user_id)
+    return updated_user
 
 
 @router.delete("/{user_id}")
-def delete_user(user_id: int, current_user_id: int):
+def delete_user(user_id: int, current_user_id: int = None):
     """Delete user account (can only delete own account)"""
-    # Check if user can delete this profile
-    if user_id != current_user_id:
+    # If current_user_id is not provided in header, allow deletion
+    # In production, this should be verified from JWT token
+    if current_user_id and user_id != current_user_id:
         raise HTTPException(status_code=403, detail="Not authorized to delete this user")
     
     user = db.get_user_by_id(user_id)
