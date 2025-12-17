@@ -242,6 +242,32 @@ def get_movie_reviews(movie_id: int, approved_only: bool = True) -> List[Dict]:
     conn.close()
     return dicts_from_rows(reviews)
 
+def update_review(review_id: int, text: str = None, rating: int = None) -> Dict:
+    """Update review details"""
+    conn = get_db()
+    cursor = conn.cursor()
+    
+    updates = []
+    params = []
+    
+    if text is not None:
+        updates.append("text = ?")
+        params.append(text)
+    if rating is not None:
+        updates.append("rating = ?")
+        params.append(rating)
+    
+    if not updates:
+        conn.close()
+        return get_review_by_id(review_id)
+    
+    params.append(review_id)
+    query = f"UPDATE reviews SET {', '.join(updates)} WHERE id = ?"
+    cursor.execute(query, params)
+    conn.commit()
+    conn.close()
+    return get_review_by_id(review_id)
+
 def approve_review(review_id: int) -> bool:
     conn = get_db()
     cursor = conn.cursor()
