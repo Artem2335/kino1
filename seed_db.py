@@ -1,7 +1,11 @@
-"""Seed database with 50 real movies, reviews, ratings, and users"""
+"""Seed database with 50 real movies and reviews for v2.0.0
+
+Note: As of v2.0.0, the ratings table has been removed.
+Rating functionality is now part of the review model.
+Each review has an optional rating field (1-5).
+"""
 import sys
 from pathlib import Path
-import hashlib
 
 sys.path.insert(0, str(Path(__file__).parent))
 
@@ -26,356 +30,36 @@ admin_user = {"email": "moderator@kinovzor.ru", "username": "moderator", "passwo
 
 # Real movies with posters
 movies_data = [
-   {
-    "title": "Шоу Трумэна",
-    "year": 1998,
-    "genre": "Драма",
-    "poster": "https://images.tmdb.org/t/p/w500/wcZAHMq0dHW0yVSiXG3wk9T8NuS.jpg",
-    "desc": "История человека, жизнь которого - один огромный телевизионный спектакль"
-  },
-  {
-    "title": "Жизнь прекрасна",
-    "year": 1997,
-    "genre": "Драма",
-    "poster": "https://images.tmdb.org/t/p/w500/a8Q0gKwXL4sTY4e2JRqJJe0R9Uf.jpg",
-    "desc": "Отец защищает своего сына от ужасов войны через игру и воображение"
-  },
-  {
-    "title": "Форрест Гамп",
-    "year": 1994,
-    "genre": "Драма",
-    "poster": "https://images.tmdb.org/t/p/w500/h5oK4pZKTBbzYWh5f5GR6nUyJGX.jpg",
-    "desc": "История простого человека, который достиг невероятных высот"
-  },
-  {
-    "title": "Зелёная миля",
-    "year": 1999,
-    "genre": "Драма",
-    "poster": "https://images.tmdb.org/t/p/w500/radBbkxJuMCIgDmH6sIJ3xOIw5N.jpg",
-    "desc": "Исправительная камера и чудо в виде сверхъестественных способностей"
-  },
-  {
-    "title": "Спасение рядового Райана",
-    "year": 1998,
-    "genre": "Боевик",
-    "poster": "https://images.tmdb.org/t/p/w500/3mQm4l3Fb9xP6R8vNPSu6s4RbVq.jpg",
-    "desc": "Эпическая история о спасении солдата во время Второй мировой войны"
-  },
-  {
-    "title": "Бойцовский клуб",
-    "year": 1999,
-    "genre": "Триллер",
-    "poster": "https://images.tmdb.org/t/p/w500/hEv2ovsKl5p3itLVeKyUaO0d04o.jpg",
-    "desc": "Психологический триллер о подпольном клубе бойцов"
-  },
-  {
-    "title": "Матрица",
-    "year": 1999,
-    "genre": "Фантастика",
-    "poster": "https://images.tmdb.org/t/p/w500/vgpXmVaVSUdzqkAcg1aWZbB0Bsb.jpg",
-    "desc": "Революционный фантастический боевик о реальности и иллюзии"
-  },
-  {
-    "title": "Список Шиндлера",
-    "year": 1993,
-    "genre": "Драма",
-    "poster": "https://images.tmdb.org/t/p/w500/sF1U4EUQS8YHUPAzM9QFGpDQi23.jpg",
-    "desc": "История немецкого бизнесмена, спасившего тысячи евреев"
-  },
-  {
-    "title": "Звёздные войны: Эпизод I",
-    "year": 1999,
-    "genre": "Фантастика",
-    "poster": "https://images.tmdb.org/t/p/w500/sblJQR6dYLmA4iZM3fZ8QZKnqFi.jpg",
-    "desc": "Новое начало саги о войне галактик"
-  },
-  {
-    "title": "Титаник",
-    "year": 1997,
-    "genre": "Мелодрама",
-    "poster": "https://images.tmdb.org/t/p/w500/9xjZS2rlWxYGEARQbIcRswroIDe.jpg",
-    "desc": "Эпическая романтическая драма о гибели лайнера"
-  },
-  {
-    "title": "Красота по-американски",
-    "year": 1999,
-    "genre": "Драма",
-    "poster": "https://images.tmdb.org/t/p/w500/lj03JWZVYDRmXQDwCYf3LST6zKE.jpg",
-    "desc": "Тёмная комедия о мечтах и идеалах в пригороде"
-  },
-  {
-    "title": "Хороший, плохой, злой",
-    "year": 1966,
-    "genre": "Боевик",
-    "poster": "https://images.tmdb.org/t/p/w500/kGLuv0OWeSYXaDn7tDLwQF24xNr.jpg",
-    "desc": "Культовый вестерн про три стрелка в поисках сокровища"
-  },
-  {
-    "title": "Пульп Фикшн",
-    "year": 1994,
-    "genre": "Триллер",
-    "poster": "https://images.tmdb.org/t/p/w500/d8duYyyC9J5T3OMsDNxoXy7AzM2.jpg",
-    "desc": "Нелинейное повествование о криминальной жизни Лос-Анджелеса"
-  },
-  {
-    "title": "Молчание ягнят",
-    "year": 1991,
-    "genre": "Триллер",
-    "poster": "https://images.tmdb.org/t/p/w500/lqnkQg27xzj5zEMWIGDyamCs78V.jpg",
-    "desc": "Психологический триллер про охоту на серийного убийцу"
-  },
-  {
-    "title": "Назад в будущее",
-    "year": 1985,
-    "genre": "Комедия",
-    "poster": "https://images.tmdb.org/t/p/w500/w0OMwQ67BC2I3yxn91jMmqKGP2D.jpg",
-    "desc": "Приключенческая комедия о путешествиях во времени"
-  },
-  {
-    "title": "Пираты Карибского моря",
-    "year": 2003,
-    "genre": "Приключения",
-    "poster": "https://images.tmdb.org/t/p/w500/tkt7b9G3MC2j0FkyMb1dBG6MxPf.jpg",
-    "desc": "Веселое приключение капитана Джека Воробья"
-  },
-  {
-    "title": "Великий Гэтсби",
-    "year": 2013,
-    "genre": "Драма",
-    "poster": "https://images.tmdb.org/t/p/w500/fpVcjqoKXRVHlWpbiKLEeA6XC7S.jpg",
-    "desc": "Роман о любви, амбициях и американской мечте"
-  },
-  {
-    "title": "Интерстеллар",
-    "year": 2014,
-    "genre": "Фантастика",
-    "poster": "https://images.tmdb.org/t/p/w500/nv5yFk2kZo6jjc2gc3umaGmel8Z.jpg",
-    "desc": "Космическая эпопея о спасении человечества"
-  },
-  {
-    "title": "Темный рыцарь",
-    "year": 2008,
-    "genre": "Боевик",
-    "poster": "https://images.tmdb.org/t/p/w500/1hCw8kSUIKd9yb1PLV2yAGG7vIY.jpg",
-    "desc": "Второй фильм о Бэтмене с легендарным Джокером"
-  },
-  {
-    "title": "Социальная сеть",
-    "year": 2010,
-    "genre": "Драма",
-    "poster": "https://images.tmdb.org/t/p/w500/gzJnMEMnWay6UWuKvnEfM9VZeI9.jpg",
-    "desc": "История создания Facebook и его основателя"
-  },
-  {
-    "title": "Лучший стрелок",
-    "year": 1986,
-    "genre": "Боевик",
-    "poster": "https://images.tmdb.org/t/p/w500/xGKNcXc0M8cVERYV7tVrVgkn5ZL.jpg",
-    "desc": "История летчика истребителя и его романтичного пути"
-  },
-  {
-    "title": "Лиловые холмы",
-    "year": 2006,
-    "genre": "Драма",
-    "poster": "https://images.tmdb.org/t/p/w500/zfD8IK7f6sWQgWXm0L3k0m3FqSp.jpg",
-    "desc": "Трогательная история любви и разлуки"
-  },
-  {
-    "title": "Джанго освобожденный",
-    "year": 2012,
-    "genre": "Боевик",
-    "poster": "https://images.tmdb.org/t/p/w500/v8ZaC0QrMLKqHSi2X0HMXVK5X9M.jpg",
-    "desc": "Западный боевик о борьбе с рабством"
-  },
-  {
-    "title": "Земля обетованная",
-    "year": 2012,
-    "genre": "Драма",
-    "poster": "https://images.tmdb.org/t/p/w500/cV6tNFkMzR6dzp2Cm6v1oeI1sR0.jpg",
-    "desc": "История двух семей, связанных газом и экологией"
-  },
-  {
-    "title": "Гренада Испанская",
-    "year": 2011,
-    "genre": "Драма",
-    "poster": "https://images.tmdb.org/t/p/w500/8NNbHMFYcULkfgsCa7bYq4TQ4UO.jpg",
-    "desc": "Историческая драма об Испании и её культуре"
-  },
-  {
-    "title": "Мёртвые поэты общества",
-    "year": 1989,
-    "genre": "Драма",
-    "poster": "https://images.tmdb.org/t/p/w500/2l8Rgc2V7o81GKD8dMD9dHmcbJh.jpg",
-    "desc": "Вдохновляющая история учителя и его учеников"
-  },
-  {
-    "title": "Миллион Азарова",
-    "year": 2006,
-    "genre": "Триллер",
-    "poster": "https://images.tmdb.org/t/p/w500/5OcVb7x1zKzLfPjGwNy0F7XZQTB.jpg",
-    "desc": "История о том, что можно купить за миллион долларов"
-  },
-  {
-    "title": "Выцветший гвоздик",
-    "year": 1992,
-    "genre": "Западный",
-    "poster": "https://images.tmdb.org/t/p/w500/7bnJAyGxNRWZ8YxqgQkuOI3ZTzi.jpg",
-    "desc": "Мрачный вестерн про старого стрелка"
-  },
-  {
-    "title": "Холодная гора",
-    "year": 2003,
-    "genre": "Драма",
-    "poster": "https://images.tmdb.org/t/p/w500/aJyJDNz79B4w5r8QVLpIozY7Ppf.jpg",
-    "desc": "История любви и войны в период Гражданской войны"
-  },
-  {
-    "title": "Один дома",
-    "year": 1990,
-    "genre": "Комедия",
-    "poster": "https://images.tmdb.org/t/p/w500/r1bKEBUgJDJ6dIwBN2L6oG8BYtX.jpg",
-    "desc": "Семейная комедия о мальчике, оставшемся защищать дом"
-  },
-  {
-    "title": "Ловушка для мамы",
-    "year": 1998,
-    "genre": "Комедия",
-    "poster": "https://images.tmdb.org/t/p/w500/6K5yJvHVLk2p6dVBOHlzJ1tqMnl.jpg",
-    "desc": "Комедия про близнецов, разлученных при рождении"
-  },
-  {
-    "title": "Город грехов",
-    "year": 2005,
-    "genre": "Боевик",
-    "poster": "https://images.tmdb.org/t/p/w500/jJJqVjvJStvVb9eoSQxP4S3K3Vy.jpg",
-    "desc": "Нуаровский боевик про преступный город"
-  },
-  {
-    "title": "Любовь в эпоху холеры",
-    "year": 2007,
-    "genre": "Мелодрама",
-    "poster": "https://images.tmdb.org/t/p/w500/6RvHcZKd7ZFYLk5k9blVPL6TqHR.jpg",
-    "desc": "История долгой и верной любви через годы"
-  },
-  {
-    "title": "Неспешный танец",
-    "year": 1987,
-    "genre": "Мелодрама",
-    "poster": "https://images.tmdb.org/t/p/w500/cXiN4/nv7z5lZuv2l5h5gF6k8lF9w.jpg",
-    "desc": "Романтическая драма про танцы и любовь"
-  },
-  {
-    "title": "Водный мир",
-    "year": 1995,
-    "genre": "Фантастика",
-    "poster": "https://images.tmdb.org/t/p/w500/9mqHSs9L4pGzgmQsRSxvBT6bnv.jpg",
-    "desc": "Постапокалиптический фантастический боевик"
-  },
-  {
-    "title": "Люди в чёрном",
-    "year": 1997,
-    "genre": "Комедия",
-    "poster": "https://images.tmdb.org/t/p/w500/z1p34vh_XGMElephic263GDwHu4.jpg",
-    "desc": "Весёлая комедия про инопланетян и секретных агентов"
-  },
-  {
-    "title": "Парк Юрского периода",
-    "year": 1993,
-    "genre": "Приключения",
-    "poster": "https://images.tmdb.org/t/p/w500/WXZ1O0nYL9T2AehM8YGOmtEj2Ov.jpg",
-    "desc": "Культовая фантастика про парк динозавров"
-  },
-  {
-    "title": "Челюсти",
-    "year": 1975,
-    "genre": "Ужасы",
-    "poster": "https://images.tmdb.org/t/p/w500/UKnrHaH7NM2Mxk4iN3LGYoiOODB.jpg",
-    "desc": "Классический фильм про огромную белую акулу"
-  },
-  {
-    "title": "Как поймать тигра хвостом",
-    "year": 1986,
-    "genre": "Комедия",
-    "poster": "https://images.tmdb.org/t/p/w500/h5z3v1xnFJKLvKaWslDIWLDJNKj.jpg",
-    "desc": "Комедийный боевик про лучших друзей"
-  },
-  {
-    "title": "Крупная деньга",
-    "year": 1983,
-    "genre": "Комедия",
-    "poster": "https://images.tmdb.org/t/p/w500/rF4dUvO0Yx3FFNjVYCKhNlnVrj2.jpg",
-    "desc": "Комедия про преступление и большие деньги"
-  },
-  {
-    "title": "Ликвидатор",
-    "year": 1988,
-    "genre": "Боевик",
-    "poster": "https://images.tmdb.org/t/p/w500/u1nzqWfqR5c2Ly8Y6XJxV8i3Dd0.jpg",
-    "desc": "Боевик про рокера, ставшего киллером"
-  },
-  {
-    "title": "Четыре комнаты",
-    "year": 1995,
-    "genre": "Комедия",
-    "poster": "https://images.tmdb.org/t/p/w500/yOrVV2yA9x2Q7OQmYFdz2qLpCg.jpg",
-    "desc": "Нелепая комедия про гостиницу в последнюю ночь года"
-  },
-  {
-    "title": "Диктатор",
-    "year": 1940,
-    "genre": "Комедия",
-    "poster": "https://images.tmdb.org/t/p/w500/kI0GX3O2E0IhLbH3T5mVJiLrMSm.jpg",
-    "desc": "Политическая сатира Чарли Чаплина"
-  },
-  {
-    "title": "Дневник Бридджит Джонс",
-    "year": 2001,
-    "genre": "Комедия",
-    "poster": "https://images.tmdb.org/t/p/w500/3VlC7nYuI9K6R9P7rRYVDIY16Hc.jpg",
-    "desc": "Романтическая комедия про женщину в поисках любви"
-  },
-  {
-    "title": "Ночь музеев",
-    "year": 2006,
-    "genre": "Комедия",
-    "poster": "https://images.tmdb.org/t/p/w500/4r0kP63sFJ7fBL7hqcHMk3sT73M.jpg",
-    "desc": "Семейная комедия про оживающих музейных экспонатов"
-  },
-  {
-    "title": "Аватар",
-    "year": 2009,
-    "genre": "Фантастика",
-    "poster": "https://images.tmdb.org/t/p/w500/6ELCZqJwQAe1UGvzo1nH0nNcY1w.jpg",
-    "desc": "Эпическая фантастика про войну за планету"
-  },
-  {
-    "title": "Начало",
-    "year": 2010,
-    "genre": "Фантастика",
-    "poster": "https://images.tmdb.org/t/p/w500/9gk7adHYeDMNNGY3i1Lpg8gECFd.jpg",
-    "desc": "Умный триллер про краже идей из снов"
-  },
-  {
-    "title": "Когда Гарри встретил Салли",
-    "year": 1989,
-    "genre": "Комедия",
-    "poster": "https://images.tmdb.org/t/p/w500/2xw0GnHVxX6q5xqTlkzgGmkPVKV.jpg",
-    "desc": "Классическая романтическая комедия про дружбу"
-  },
-  {
-    "title": "Спасение",
-    "year": 1994,
-    "genre": "Драма",
-    "poster": "https://images.tmdb.org/t/p/w500/xAKMj8MTvfuP5vvrNEFOqHo47J8.jpg",
-    "desc": "История узника, обретшего надежду и свободу"
-  },
-  {
-    "title": "Рокки",
-    "year": 1976,
-    "genre": "Драма",
-    "poster": "https://images.tmdb.org/t/p/w500/aPJt2EVDQD8P0Tby3b4t0am47xs.jpg",
-    "desc": "Вдохновляющая история борца, ставшего чемпионом"
-  }
+    {"title": "Шоу Трумэна", "year": 1998, "genre": "Драма", "poster": "https://images.tmdb.org/t/p/w500/wcZAHMq0dHW0yVSiXG3wk9T8NuS.jpg", "desc": "История человека, жизнь которого - один огромный телевизионный спектакль"},
+    {"title": "Жизнь прекрасна", "year": 1997, "genre": "Драма", "poster": "https://images.tmdb.org/t/p/w500/a8Q0gKwXL4sTY4e2JRqJJe0R9Uf.jpg", "desc": "Отец защищает своего сына от ужасов войны через игру и воображение"},
+    {"title": "Форрест Гамп", "year": 1994, "genre": "Драма", "poster": "https://images.tmdb.org/t/p/w500/h5oK4pZKTBbzYWh5f5GR6nUyJGX.jpg", "desc": "История простого человека, который достиг невероятных высот"},
+    {"title": "Зелёная миля", "year": 1999, "genre": "Драма", "poster": "https://images.tmdb.org/t/p/w500/radBbkxJuMCIgDmH6sIJ3xOIw5N.jpg", "desc": "Исправительная камера и чудо в виде сверхъестественных способностей"},
+    {"title": "Спасение рядового Райана", "year": 1998, "genre": "Боевик", "poster": "https://images.tmdb.org/t/p/w500/3mQm4l3Fb9xP6R8vNPSu6s4RbVq.jpg", "desc": "Эпическая история о спасении солдата во время Второй мировой войны"},
+    {"title": "Бойцовский клуб", "year": 1999, "genre": "Триллер", "poster": "https://images.tmdb.org/t/p/w500/hEv2ovsKl5p3itLVeKyUaO0d04o.jpg", "desc": "Психологический триллер о подпольном клубе бойцов"},
+    {"title": "Матрица", "year": 1999, "genre": "Фантастика", "poster": "https://images.tmdb.org/t/p/w500/vgpXmVaVSUdzqkAcg1aWZbB0Bsb.jpg", "desc": "Революционный фантастический боевик о реальности и иллюзии"},
+    {"title": "Список Шиндлера", "year": 1993, "genre": "Драма", "poster": "https://images.tmdb.org/t/p/w500/sF1U4EUQS8YHUPAzM9QFGpDQi23.jpg", "desc": "История немецкого бизнесмена, спасившего тысячи евреев"},
+    {"title": "Звёздные войны: Эпизод I", "year": 1999, "genre": "Фантастика", "poster": "https://images.tmdb.org/t/p/w500/sblJQR6dYLmA4iZM3fZ8QZKnqFi.jpg", "desc": "Новое начало саги о войне галактик"},
+    {"title": "Титаник", "year": 1997, "genre": "Мелодрама", "poster": "https://images.tmdb.org/t/p/w500/9xjZS2rlWxYGEARQbIcRswroIDe.jpg", "desc": "Эпическая романтическая драма о гибели лайнера"},
+    {"title": "Красота по-американски", "year": 1999, "genre": "Драма", "poster": "https://images.tmdb.org/t/p/w500/lj03JWZVYDRmXQDwCYf3LST6zKE.jpg", "desc": "Тёмная комедия о мечтах и идеалах в пригороде"},
+    {"title": "Хороший, плохой, злой", "year": 1966, "genre": "Боевик", "poster": "https://images.tmdb.org/t/p/w500/kGLuv0OWeSYXaDn7tDLwQF24xNr.jpg", "desc": "Культовый вестерн про три стрелка в поисках сокровища"},
+    {"title": "Пульп Фикшн", "year": 1994, "genre": "Триллер", "poster": "https://images.tmdb.org/t/p/w500/d8duYyyC9J5T3OMsDNxoXy7AzM2.jpg", "desc": "Нелинейное повествование о криминальной жизни Лос-Анджелеса"},
+    {"title": "Молчание ягнят", "year": 1991, "genre": "Триллер", "poster": "https://images.tmdb.org/t/p/w500/lqnkQg27xzj5zEMWIGDyamCs78V.jpg", "desc": "Психологический триллер про охоту на серийного убийцу"},
+    {"title": "Назад в будущее", "year": 1985, "genre": "Комедия", "poster": "https://images.tmdb.org/t/p/w500/w0OMwQ67BC2I3yxn91jMmqKGP2D.jpg", "desc": "Приключенческая комедия о путешествиях во времени"},
+    {"title": "Пираты Карибского моря", "year": 2003, "genre": "Приключения", "poster": "https://images.tmdb.org/t/p/w500/tkt7b9G3MC2j0FkyMb1dBG6MxPf.jpg", "desc": "Веселое приключение капитана Джека Воробья"},
+    {"title": "Великий Гэтсби", "year": 2013, "genre": "Драма", "poster": "https://images.tmdb.org/t/p/w500/fpVcjqoKXRVHlWpbiKLEeA6XC7S.jpg", "desc": "Роман о любви, амбициях и американской мечте"},
+    {"title": "Интерстеллар", "year": 2014, "genre": "Фантастика", "poster": "https://images.tmdb.org/t/p/w500/nv5yFk2kZo6jjc2gc3umaGmel8Z.jpg", "desc": "Космическая эпопея о спасении человечества"},
+    {"title": "Темный рыцарь", "year": 2008, "genre": "Боевик", "poster": "https://images.tmdb.org/t/p/w500/1hCw8kSUIKd9yb1PLV2yAGG7vIY.jpg", "desc": "Второй фильм о Бэтмене с легендарным Джокером"},
+    {"title": "Социальная сеть", "year": 2010, "genre": "Драма", "poster": "https://images.tmdb.org/t/p/w500/gzJnMEMnWay6UWuKvnEfM9VZeI9.jpg", "desc": "История создания Facebook и его основателя"},
+    {"title": "Лучший стрелок", "year": 1986, "genre": "Боевик", "poster": "https://images.tmdb.org/t/p/w500/xGKNcXc0M8cVERYV7tVrVgkn5ZL.jpg", "desc": "История летчика истребителя и его романтичного пути"},
+    {"title": "Джанго освобожденный", "year": 2012, "genre": "Боевик", "poster": "https://images.tmdb.org/t/p/w500/v8ZaC0QrMLKqHSi2X0HMXVK5X9M.jpg", "desc": "Западный боевик о борьбе с рабством"},
+    {"title": "Мёртвые поэты общества", "year": 1989, "genre": "Драма", "poster": "https://images.tmdb.org/t/p/w500/2l8Rgc2V7o81GKD8dMD9dHmcbJh.jpg", "desc": "Вдохновляющая история учителя и его учеников"},
+    {"title": "Выцветший гвоздик", "year": 1992, "genre": "Боевик", "poster": "https://images.tmdb.org/t/p/w500/7bnJAyGxNRWZ8YxqgQkuOI3ZTzi.jpg", "desc": "Мрачный вестерн про старого стрелка"},
+    {"title": "Холодная гора", "year": 2003, "genre": "Драма", "poster": "https://images.tmdb.org/t/p/w500/aJyJDNz79B4w5r8QVLpIozY7Ppf.jpg", "desc": "История любви и войны в период Гражданской войны"},
+    {"title": "Один дома", "year": 1990, "genre": "Комедия", "poster": "https://images.tmdb.org/t/p/w500/r1bKEBUgJDJ6dIwBN2L6oG8BYtX.jpg", "desc": "Семейная комедия о мальчике, оставшемся защищать дом"},
+    {"title": "Ловушка для мамы", "year": 1998, "genre": "Комедия", "poster": "https://images.tmdb.org/t/p/w500/6K5yJvHVLk2p6dVBOHlzJ1tqMnl.jpg", "desc": "Комедия про близнецов, разлученных при рождении"},
+    {"title": "Город грехов", "year": 2005, "genre": "Боевик", "poster": "https://images.tmdb.org/t/p/w500/jJJqVjvJStvVb9eoSQxP4S3K3Vy.jpg", "desc": "Нуаровский боевик про преступный город"},
+    {"title": "Люди в чёрном", "year": 1997, "genre": "Комедия", "poster": "https://images.tmdb.org/t/p/w500/z1p34vh_XGMElephic263GDwHu4.jpg", "desc": "Весёлая комедия про инопланетян и секретных агентов"},
+    {"title": "Парк Юрского периода", "year": 1993, "genre": "Приключения", "poster": "https://images.tmdb.org/t/p/w500/WXZ1O0nYL9T2AehM8YGOmtEj2Ov.jpg", "desc": "Культовая фантастика про парк динозавров"},
 ]
 
 reviews_templates = {
@@ -435,51 +119,46 @@ reviews_templates = {
         {"text": "Шикарный фильм про путешествия и дружбу!", "rating": 5},
         {"text": "Неплохо, но могло быть ещё лучше.", "rating": 3},
     ],
-    "Ужасы": [
-        {"text": "Леденящий ужас! Не спал всю ночь после просмотра!", "rating": 5},
-        {"text": "Классический фильм ужасов! Пугает по настоящему!", "rating": 5},
-        {"text": "Страшный фильм, хорошо сделан, но не очень оригинален.", "rating": 4},
-        {"text": "Попытка ужаса, но скорее смешно чем страшно.", "rating": 2},
-        {"text": "Ужасающий и прекрасный фильм!", "rating": 5},
-        {"text": "Слишком кровавый и насильственный.", "rating": 2},
-    ],
 }
 
-def hash_password(password: str) -> str:
-    """Hash password using SHA256"""
-    return hashlib.sha256(password.encode()).hexdigest()
-
 def seed_movies_and_reviews():
-    """Load all 50 real movies with reviews, ratings, and users into database"""
-    print("\n🍋 Loading 50 movies, reviews, ratings, and users...\n")
+    """Load all movies with reviews and users into database
+    
+    v2.0.0 Changes:
+    - Removed ratings table (ratings are now part of reviews)
+    - Passwords are automatically hashed in create_user()
+    - Each review can have an optional rating field (1-5)
+    """
+    print("\n🎬 Loading movies, reviews, and users for v2.0.0...\n")
     
     # Create users first
     print("👥 Creating users...")
     user_ids = []
     
     # Create 10 viewers
+    # Passwords are automatically hashed in create_user()
     for viewer in viewers_data:
         user = db.create_user(
             email=viewer["email"],
             username=viewer["username"],
-            password=hash_password(viewer["password"])
+            password=viewer["password"]  # Will be auto-hashed
         )
         user_ids.append(user['id'])
         print(f"   ✅ Created viewer: {viewer['username']}")
     
     # Create moderator
+    # Password will be auto-hashed
     admin = db.create_user(
         email=admin_user["email"],
         username=admin_user["username"],
-        password=hash_password(admin_user["password"]),
+        password=admin_user["password"],  # Will be auto-hashed
         is_moderator=admin_user["is_moderator"]
     )
     print(f"   ✅ Created moderator: {admin_user['username']}")
     
-    print(f"\n🎬 Creating movies, reviews, and ratings...\n")
+    print(f"\n🎬 Creating {len(movies_data)} movies with reviews...\n")
     
     total_reviews = 0
-    total_ratings = 0
     
     for i, movie_info in enumerate(movies_data):
         # Create movie
@@ -502,6 +181,8 @@ def seed_movies_and_reviews():
             # Assign to different user (cycle through user_ids)
             user_id = user_ids[j % len(user_ids)]
             
+            # Create review with rating
+            # v2.0.0: Ratings are part of review, not separate table
             db.create_review(
                 movie_id=movie_id,
                 user_id=user_id,
@@ -509,32 +190,28 @@ def seed_movies_and_reviews():
                 rating=review["rating"]
             )
             total_reviews += 1
-            
-            # Create corresponding rating in ratings table
-            db.create_or_update_rating(
-                movie_id=movie_id,
-                user_id=user_id,
-                value=float(review["rating"])
-            )
-            total_ratings += 1
         
         # Print progress
         if (i + 1) % 10 == 0:
-            print(f"  ✅ {i + 1}/50 movies loaded")
+            print(f"  ✅ {i + 1}/{len(movies_data)} movies loaded")
     
-    print("\n✅ All data loaded!")
-    print(f"🎬 50 настоящих фильмов")
-    print(f"👥 10 зрителей + 1 модератор")
-    print(f"🗣️  {total_reviews} рецензий (от {len(user_ids)} пользователей)")
-    print(f"⭐ {total_ratings} оценок в таблице ratings")
-    print(f"\n📁 Учётные данные:")
-    print(f"   Модератор:")
-    print(f"   Email: {admin_user['email']}")
-    print(f"   Password: {admin_user['password']}")
-    print(f"\n   Зритель пример (Иванов Игорь):")
-    print(f"   Email: {viewers_data[0]['email']}")
-    print(f"   Password: {viewers_data[0]['password']}")
-    print(f"\n📁 file: kinovzor.db\n")
+    print("\n✅ All data loaded successfully!")
+    print("\n📊 Database Summary:")
+    print(f"   🎬 {len(movies_data)} movies")
+    print(f"   👥 {len(user_ids)} viewers + 1 moderator")
+    print(f"   🗣️  {total_reviews} reviews with ratings")
+    print(f"\n🔐 Test Accounts:")
+    print(f"   Moderator:")
+    print(f"   • Email: {admin_user['email']}")
+    print(f"   • Password: {admin_user['password']}")
+    print(f"\n   Viewer Example (Иванов Игорь):")
+    print(f"   • Email: {viewers_data[0]['email']}")
+    print(f"   • Password: {viewers_data[0]['password']}")
+    print(f"\n📁 Database: kinovzor.db")
+    print(f"\n💡 v2.0.0 Changes:")
+    print(f"   ✅ Ratings table removed (ratings are in reviews)")
+    print(f"   ✅ Passwords automatically hashed with bcrypt")
+    print(f"   ✅ Each review can have rating 1-5\n")
 
 if __name__ == "__main__":
     seed_movies_and_reviews()

@@ -263,7 +263,8 @@ async function deleteReview(reviewId, movieId) {
   }
   
   try {
-    await apiCall('DELETE', `/movies/reviews/${reviewId}`);
+    // ✅ FIXED: Use correct endpoint /api/reviews/{id} instead of /api/movies/reviews/{id}
+    await apiCall('DELETE', `/reviews/${reviewId}`);
     alert('Рецензия удалена');
     openMovie(movieId);
     updateCounters();
@@ -405,7 +406,9 @@ async function submitReview(mid) {
   }
 
   try {
-    await apiCall('POST', `/movies/${mid}/reviews?user_id=${currentUser.id}`, {
+    // ✅ FIXED: Send data in request body, not as query params
+    await apiCall('POST', `/movies/${mid}/reviews`, {
+      user_id: currentUser.id,
       text: txt,
       rating: currentMovieRating,
     });
