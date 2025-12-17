@@ -85,7 +85,7 @@ def update_movie(movie_id: int, data: MovieUpdate):
     if not movie:
         raise HTTPException(status_code=404, detail="Movie not found")
     
-    db.update_movie(
+    updated_movie = db.update_movie(
         movie_id=movie_id,
         title=data.title,
         description=data.description,
@@ -93,11 +93,11 @@ def update_movie(movie_id: int, data: MovieUpdate):
         year=data.year,
         poster_url=data.poster_url
     )
-    return db.get_movie_by_id(movie_id)
+    return updated_movie
 
 @router.delete("/{movie_id}")
 def delete_movie(movie_id: int):
-    """Delete a movie (admin only)"""
+    """Delete a movie (admin only). Cascades to delete all related reviews and favorites."""
     movie = db.get_movie_by_id(movie_id)
     if not movie:
         raise HTTPException(status_code=404, detail="Movie not found")
