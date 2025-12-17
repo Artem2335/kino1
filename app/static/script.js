@@ -263,7 +263,8 @@ async function deleteReview(reviewId, movieId) {
   }
   
   try {
-    await apiCall('DELETE', `/movies/reviews/${reviewId}`);
+    // ✅ FIXED: Use correct endpoint /api/reviews/{id} instead of /api/movies/reviews/{id}
+    await apiCall('DELETE', `/reviews/${reviewId}`);
     alert('Рецензия удалена');
     openMovie(movieId);
     updateCounters();
