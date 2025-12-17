@@ -66,6 +66,84 @@ def get_movie(movie_id: int):
     
     return movie
 
+@router.get("/{movie_id}/reviews")
+def get_movie_reviews(movie_id: int, approved_only: bool = Query(False)):
+    """Get reviews for a specific movie"""
+    movie = db.get_movie_by_id(movie_id)
+    if not movie:
+        raise HTTPException(status_code=404, detail="Movie not found")
+    
+    reviews = db.get_movie_reviews(movie_id, approved_only=approved_only)
+    return reviews
+
+@router.post("/{movie_id}/reviews")
+def create_movie_review(movie_id: int, user_id: int, text: str, rating: Optional[int] = None):
+    """Create a review for a movie (v2.0.0: ratings are part of reviews)"""
+    movie = db.get_movie_by_id(movie_id)
+    if not movie:
+        raise HTTPException(status_code=404, detail="Movie not found")
+    
+    review_data = {
+        "text": text,
+        "rating": rating
+    }
+    
+    review = db.create_review(
+        movie_id=movie_id,
+        user_id=user_id,
+        text=text,
+        rating=rating
+    )
+    return review
+
+@router.get("/{movie_id}/rating-stats")
+def get_movie_rating_stats(movie_id: int):
+    """Get rating statistics for a movie (calculated from review ratings in v2.0.0)"""
+    movie = db.get_movie_by_id(movie_id)
+    if not movie:
+        raise HTTPException(status_code=404, detail="Movie not found")
+    
+    stats = db.get_rating_stats(movie_id)
+    return stats
+
+@router.get("/user/{user_id}/favorites")
+def get_user_favorites(user_id: int):
+    """Get favorite movies for a specific user"""
+    user = db.get_user_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    favorites = db.get_user_favorites(user_id)
+    return favorites
+
+@router.post("/{movie_id}/favorites")
+def add_favorite(movie_id: int, user_id: int):
+    """Add movie to user's favorites"""
+    movie = db.get_movie_by_id(movie_id)
+    if not movie:
+        raise HTTPException(status_code=404, detail="Movie not found")
+    
+    user = db.get_user_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    db.add_favorite(movie_id, user_id)
+    return {"status": "added"}
+
+@router.delete("/{movie_id}/favorites")
+def remove_favorite(movie_id: int, user_id: int):
+    """Remove movie from user's favorites"""
+    movie = db.get_movie_by_id(movie_id)
+    if not movie:
+        raise HTTPException(status_code=404, detail="Movie not found")
+    
+    user = db.get_user_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    db.remove_favorite(movie_id, user_id)
+    return {"status": "removed"}
+
 @router.post("/")
 def create_movie(data: MovieCreate):
     """Create a new movie (admin only)"""
