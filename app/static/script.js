@@ -405,7 +405,9 @@ async function submitReview(mid) {
   }
 
   try {
-    await apiCall('POST', `/movies/${mid}/reviews?user_id=${currentUser.id}`, {
+    // ✅ FIXED: Send data in request body, not as query params
+    await apiCall('POST', `/movies/${mid}/reviews`, {
+      user_id: currentUser.id,
       text: txt,
       rating: currentMovieRating,
     });
