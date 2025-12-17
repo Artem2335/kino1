@@ -137,8 +137,15 @@ def get_movie_by_id(movie_id: int) -> Optional[Dict]:
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM movies WHERE id = ?", (movie_id,))
     movie = cursor.fetchone()
-    conn.close()
-    return dict_from_row(movie)
+    conn.close()    
+    if movie:
+        movie_dict = dict_from_row(movie)
+        # Add rating stats to movie
+        stats = get_rating_stats(movie_id)
+        movie_dict['rating'] = stats.get('average')
+        movie_dict['rating_count'] = stats.get('count')
+        return movie_dict
+    return None
 
 def create_movie(title: str, description: str, genre: str, year: int, poster_url: str = None) -> Dict:
     conn = get_db()
@@ -289,20 +296,28 @@ def delete_review(review_id: int) -> bool:
 # Rating statistics are calculated from review ratings instead.
 
 def get_rating_stats(movie_id: int) -> Dict:
-    """Get rating statistics calculated from review ratings"""
+    """Get rating statistics calculated from ALL review ratings (approved and unapproved)
+    
+    Returns dict with:
+    - count: number of reviews with ratings
+    - average: average rating (rounded to 1 decimal)
+    """
     conn = get_db()
     cursor = conn.cursor()
+    # ✅ FIXED: Count ALL reviews with ratings, not just approved ones
+    # This way rating is calculated from all submitted ratings
     cursor.execute(
-        "SELECT COUNT(*) as count, AVG(rating) as average FROM reviews WHERE movie_id = ? AND rating IS NOT NULL AND approved = 1",
+        "SELECT COUNT(*) as count, AVG(rating) as average FROM reviews WHERE movie_id = ? AND rating IS NOT NULL",
         (movie_id,)
     )
     result = cursor.fetchone()
     conn.close()
     
     if result and result['count'] > 0:
+        avg = float(result['average'])
         return {
             "count": result['count'],
-            "average": round(float(result['average']), 1)
+            "average": round(avg, 1)
         }
     return {"count": 0, "average": None}
 
