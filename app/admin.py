@@ -1,21 +1,22 @@
 """SQLAdmin configuration for the KinoVzor application."""
 
-from sqladmin import Admin, ModelView, expose
+from sqladmin import Admin, ModelView
 from sqladmin.authentication import AuthenticationBackend
+from starlette.requests import Request
+from starlette.responses import RedirectResponse
 from app.database import engine
 from app.users.models import User
 from app.movies.models import Movie
 from app.reviews.models import Review
 from app.favorites.models import Favorite
 from fastapi import FastAPI
-from starlette.requests import Request
-from starlette.responses import RedirectResponse
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
 ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'admin123')
+SECRET_KEY = os.getenv('SECRET_KEY', 'your-secret-key-change-in-production')
 
 
 class AdminUser(AuthenticationBackend):
@@ -145,8 +146,8 @@ def setup_admin(app: FastAPI) -> None:
         app: FastAPI application instance
     """
     
-    # Setup authentication
-    authentication_backend = AdminUser()
+    # Setup authentication with secret_key
+    authentication_backend = AdminUser(secret_key=SECRET_KEY)
     
     # Create admin instance
     admin = Admin(
