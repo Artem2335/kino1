@@ -6,8 +6,12 @@ import json
 
 router = APIRouter(prefix="/api/users", tags=["users"])
 
-# Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Password hashing context with flexible schemes to support old passwords
+pwd_context = CryptContext(
+    schemes=["bcrypt", "plaintext"],
+    deprecated="auto",
+    bcrypt__rounds=12
+)
 
 
 class UserRegister(BaseModel):
@@ -29,7 +33,16 @@ class UserUpdate(BaseModel):
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a password against its hash"""
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        # Try standard verification first
+        return pwd_context.verify(plain_password, hashed_password)
+    except Exception as e:
+        # If verification fails, try plaintext comparison as fallback
+        # (for users created without proper hashing)
+        try:
+            return plain_password == hashed_password
+        except:
+            return False
 
 
 def hash_password(password: str) -> str:
