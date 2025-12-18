@@ -2,6 +2,7 @@
 import sys
 from pathlib import Path
 import hashlib
+import time
 
 sys.path.insert(0, str(Path(__file__).parent))
 
@@ -459,22 +460,28 @@ def seed_movies_and_reviews():
     
     # Create 10 viewers
     for viewer in viewers_data:
-        user = db.create_user(
-            email=viewer["email"],
-            username=viewer["username"],
-            password=hash_password(viewer["password"])
-        )
-        user_ids.append(user['id'])
-        print(f"   ✅ Created viewer: {viewer['username']}")
+        try:
+            user = db.create_user(
+                email=viewer["email"],
+                username=viewer["username"],
+                password=hash_password(viewer["password"])
+            )
+            user_ids.append(user['id'])
+            print(f"   ✅ Created viewer: {viewer['username']}")
+        except Exception as e:
+            print(f"   ⚠️  Error creating user {viewer['username']}: {str(e)}")
     
     # Create moderator
-    admin = db.create_user(
-        email=admin_user["email"],
-        username=admin_user["username"],
-        password=hash_password(admin_user["password"]),
-        is_moderator=admin_user["is_moderator"]
-    )
-    print(f"   ✅ Created moderator: {admin_user['username']}")
+    try:
+        admin = db.create_user(
+            email=admin_user["email"],
+            username=admin_user["username"],
+            password=hash_password(admin_user["password"]),
+            is_moderator=admin_user["is_moderator"]
+        )
+        print(f"   ✅ Created moderator: {admin_user['username']}")
+    except Exception as e:
+        print(f"   ⚠️  Error creating moderator: {str(e)}")
     
     print(f"\n🎬 Creating movies, reviews, and ratings...\n")
     
@@ -482,41 +489,49 @@ def seed_movies_and_reviews():
     total_ratings = 0
     
     for i, movie_info in enumerate(movies_data):
-        # Create movie
-        movie = db.create_movie(
-            title=movie_info["title"],
-            description=movie_info["desc"],
-            genre=movie_info["genre"],
-            year=movie_info["year"],
-            poster_url=movie_info["poster"]
-        )
-        movie_id = movie['id']
-        
-        # Get reviews for this genre
-        genre_reviews = reviews_templates.get(movie_info["genre"], reviews_templates["Драма"])
-        
-        # Add 4-7 reviews per movie from different users
-        review_count = 4 + (i % 4)  # 4-7 reviews
-        for j in range(review_count):
-            review = genre_reviews[j % len(genre_reviews)]
-            # Assign to different user (cycle through user_ids)
-            user_id = user_ids[j % len(user_ids)]
-            
-            db.create_review(
-                movie_id=movie_id,
-                user_id=user_id,
-                text=review["text"],
-                rating=review["rating"]
+        try:
+            # Create movie
+            movie = db.create_movie(
+                title=movie_info["title"],
+                description=movie_info["desc"],
+                genre=movie_info["genre"],
+                year=movie_info["year"],
+                poster_url=movie_info["poster"]
             )
-            total_reviews += 1
+            movie_id = movie['id']
             
-            # Create corresponding rating in ratings table
-            db.create_or_update_rating(
-                movie_id=movie_id,
-                user_id=user_id,
-                value=float(review["rating"])
-            )
-            total_ratings += 1
+            # Get reviews for this genre
+            genre_reviews = reviews_templates.get(movie_info["genre"], reviews_templates["Драма"])
+            
+            # Add 4-7 reviews per movie from different users
+            review_count = 4 + (i % 4)  # 4-7 reviews
+            for j in range(review_count):
+                review = genre_reviews[j % len(genre_reviews)]
+                # Assign to different user (cycle through user_ids)
+                user_id = user_ids[j % len(user_ids)] if user_ids else 1
+                
+                try:
+                    db.create_review(
+                        movie_id=movie_id,
+                        user_id=user_id,
+                        text=review["text"],
+                        rating=review["rating"]
+                    )
+                    total_reviews += 1
+                    
+                    # Create corresponding rating in ratings table
+                    db.create_or_update_rating(
+                        movie_id=movie_id,
+                        user_id=user_id,
+                        value=float(review["rating"])
+                    )
+                    total_ratings += 1
+                except Exception as e:
+                    print(f"   ⚠️  Error creating review for movie {movie_id}: {str(e)}")
+                    continue
+        except Exception as e:
+            print(f"   ⚠️  Error creating movie: {str(e)}")
+            continue
         
         # Print progress
         if (i + 1) % 10 == 0:
@@ -524,16 +539,17 @@ def seed_movies_and_reviews():
     
     print("\n✅ All data loaded!")
     print(f"🎬 50 настоящих фильмов")
-    print(f"👥 10 зрителей + 1 модератор")
-    print(f"🗣️  {total_reviews} рецензий (от {len(user_ids)} пользователей)")
+    print(f"👥 {len(user_ids)} зрителей + 1 модератор")
+    print(f"🗣️  {total_reviews} рецензий")
     print(f"⭐ {total_ratings} оценок в таблице ratings")
     print(f"\n📁 Учётные данные:")
     print(f"   Модератор:")
     print(f"   Email: {admin_user['email']}")
     print(f"   Password: {admin_user['password']}")
-    print(f"\n   Зритель пример (Иванов Игорь):")
-    print(f"   Email: {viewers_data[0]['email']}")
-    print(f"   Password: {viewers_data[0]['password']}")
+    if viewers_data:
+        print(f"\n   Зритель пример ({viewers_data[0]['username']}):")
+        print(f"   Email: {viewers_data[0]['email']}")
+        print(f"   Password: {viewers_data[0]['password']}")
     print(f"\n📁 file: kinovzor.db\n")
 
 if __name__ == "__main__":
