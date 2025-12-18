@@ -12,8 +12,8 @@ class Review(Base):
     approved: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     # Relationships
-    movie: Mapped["Movie"] = relationship("Movie", back_populates="reviews", foreign_keys=[movie_id])
-    user: Mapped["User"] = relationship("User", back_populates="reviews", foreign_keys=[user_id])
+    movie: Mapped["Movie"] = relationship("Movie", back_populates="reviews")
+    user: Mapped["User"] = relationship("User", back_populates="reviews")
 
     extend_existing = True
 
