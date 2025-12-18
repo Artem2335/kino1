@@ -1,6 +1,7 @@
 """SQLAdmin configuration for the KinoVzor application."""
 
-from sqladmin import Admin, ModelView, AuthenticationBackend
+from sqladmin import Admin, ModelView
+from sqladmin.authentication import AuthenticationBackend
 from starlette.requests import Request
 from app.database import engine
 from app.users.models import User
@@ -155,5 +156,10 @@ def setup_admin(app: FastAPI) -> None:
         title='KinoVzor Admin',
         logo_url='https://img.icons8.com/color/96/000000/film.png',
         base_url='/admin',
-        models=[UserAdmin, MovieAdmin, ReviewAdmin, FavoriteAdmin],
     )
+    
+    # Add model views to admin
+    admin.add_view(UserAdmin)
+    admin.add_view(MovieAdmin)
+    admin.add_view(ReviewAdmin)
+    admin.add_view(FavoriteAdmin)
