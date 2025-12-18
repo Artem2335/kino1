@@ -1,7 +1,6 @@
 """SQLAdmin configuration for the KinoVzor application."""
 
-from sqladmin import Admin, ModelView
-from sqladmin.authentication import AuthenticationBackend
+from sqladmin import Admin, ModelView, AuthenticationBackend
 from starlette.requests import Request
 from app.database import engine
 from app.users.models import User
@@ -148,7 +147,7 @@ def setup_admin(app: FastAPI) -> None:
     # Setup authentication with secret_key
     authentication_backend = AdminUser(secret_key=SECRET_KEY)
     
-    # Create admin instance
+    # Create admin instance - models are registered via class inheritance
     admin = Admin(
         app=app,
         engine=engine,
@@ -156,10 +155,5 @@ def setup_admin(app: FastAPI) -> None:
         title='KinoVzor Admin',
         logo_url='https://img.icons8.com/color/96/000000/film.png',
         base_url='/admin',
+        models=[UserAdmin, MovieAdmin, ReviewAdmin, FavoriteAdmin],
     )
-    
-    # Register model views using the Admin instance
-    UserAdmin.session_maker = admin._sessionmaker
-    MovieAdmin.session_maker = admin._sessionmaker
-    ReviewAdmin.session_maker = admin._sessionmaker
-    FavoriteAdmin.session_maker = admin._sessionmaker
