@@ -8,9 +8,11 @@ from fastapi import FastAPI, status
 from fastapi.responses import RedirectResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from app.users.router import router as router_users
 from app.movies.router import router as router_movies
 from app import db
+from app.admin import setup_admin
 import os
 
 # Initialize database if not exists
@@ -29,6 +31,14 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Add session middleware for admin authentication
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.getenv('SECRET_KEY', 'your-secret-key-change-in-production'),
+    session_cookie='admin_session',
+    max_age=86400  # 24 hours
+)
+
 # Enable CORS
 app.add_middleware(
     CORSMiddleware,
@@ -41,6 +51,9 @@ app.add_middleware(
 # Include routers FIRST (before static files)
 app.include_router(router_users)
 app.include_router(router_movies)
+
+# Setup SQLAdmin
+setup_admin(app)
 
 # Get the correct path for static files
 STATIC_DIR = Path(__file__).parent / "static"
@@ -62,7 +75,10 @@ if __name__ == "__main__":
     print("\n" + "="*50)
     print("🌟 KinoVzor - Movie Review Platform")
     print("="*50)
-    print("\n🚀 Starting server...\n")
+    print("\n🚀 Starting server...")
+    print("📱 API: http://127.0.0.1:8000")
+    print("📊 Admin Panel: http://127.0.0.1:8000/admin")
+    print("📝 Docs: http://127.0.0.1:8000/docs\n")
     
     uvicorn.run(
         "app.main:app",
