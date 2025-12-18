@@ -1,7 +1,9 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends, Request
 from pydantic import BaseModel
 from typing import Optional, List
 from app import db
+import jwt
+from datetime import datetime
 
 router = APIRouter(prefix="/api/movies", tags=["movies"])
 
@@ -24,6 +26,24 @@ class MovieUpdate(BaseModel):
 class ReviewCreate(BaseModel):
     text: str
     rating: Optional[int] = None
+
+
+def get_current_user(request: Request):
+    """Extract user from JWT token in cookies"""
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    try:
+        payload = jwt.decode(token, "your-secret-key", algorithms=["HS256"])
+        user_id = payload.get("user_id")
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
+        return user_id
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
 
 
 # ========== MOVIES ==========
@@ -125,11 +145,14 @@ def get_movie_reviews(movie_id: int, approved_only: bool = Query(True)):
 
 
 @router.post("/{movie_id}/reviews")
-def create_movie_review(movie_id: int, user_id: int, data: ReviewCreate):
+def create_movie_review(movie_id: int, data: ReviewCreate, request: Request):
     """Create a review for a specific movie"""
     movie = db.get_movie_by_id(movie_id)
     if not movie:
         raise HTTPException(status_code=404, detail="Movie not found")
+    
+    # Get user from JWT token
+    user_id = get_current_user(request)
     
     review = db.create_review(
         movie_id=movie_id,
@@ -141,13 +164,16 @@ def create_movie_review(movie_id: int, user_id: int, data: ReviewCreate):
 
 
 @router.delete("/reviews/{review_id}")
-def delete_movie_review(review_id: int, user_id: int):
+def delete_movie_review(review_id: int, request: Request):
     """Delete a review (author or admin)"""
+    # Get user from JWT token
+    user_id = get_current_user(request)
+    
     review = db.get_review_by_id(review_id)
     if not review:
         raise HTTPException(status_code=404, detail="Review not found")
     
-    # Check if user is the author
+    # Check if user is the author or admin
     if review['user_id'] != user_id:
         raise HTTPException(status_code=403, detail="Not authorized to delete this review")
     
@@ -171,11 +197,14 @@ def get_movie_rating_stats(movie_id: int):
 # ========== FAVORITES FOR MOVIES ==========
 
 @router.post("/{movie_id}/favorites")
-def add_movie_to_favorites(movie_id: int, user_id: int):
+def add_movie_to_favorites(movie_id: int, request: Request):
     """Add a movie to user's favorites"""
     movie = db.get_movie_by_id(movie_id)
     if not movie:
         raise HTTPException(status_code=404, detail="Movie not found")
+    
+    # Get user from JWT token
+    user_id = get_current_user(request)
     
     result = db.add_favorite(movie_id, user_id)
     
@@ -186,11 +215,14 @@ def add_movie_to_favorites(movie_id: int, user_id: int):
 
 
 @router.delete("/{movie_id}/favorites")
-def remove_movie_from_favorites(movie_id: int, user_id: int):
+def remove_movie_from_favorites(movie_id: int, request: Request):
     """Remove a movie from user's favorites"""
     movie = db.get_movie_by_id(movie_id)
     if not movie:
         raise HTTPException(status_code=404, detail="Movie not found")
+    
+    # Get user from JWT token
+    user_id = get_current_user(request)
     
     result = db.remove_favorite(movie_id, user_id)
     return result
