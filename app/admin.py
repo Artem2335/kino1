@@ -4,7 +4,9 @@ from sqladmin import Admin, ModelView, expose
 from sqladmin.authentication import AuthenticationBackend
 from app.database import engine
 from app.users.models import User
-from app.movies.models import Movie, Review, Favorite
+from app.movies.models import Movie
+from app.reviews.models import Review
+from app.favorites.models import Favorite
 from fastapi import FastAPI
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
@@ -95,10 +97,10 @@ class ReviewAdmin(ModelView, model=Review):
     icon = 'fa-solid fa-star'
     
     # Column visibility
-    column_list = [Review.id, Review.movie_id, Review.user_id, Review.rating, Review.is_approved, Review.created_at]
-    column_details_list = [Review.id, Review.movie_id, Review.user_id, Review.rating, Review.text, Review.is_approved, Review.created_at, Review.updated_at]
+    column_list = [Review.id, Review.movie_id, Review.user_id, Review.rating, Review.approved, Review.created_at]
+    column_details_list = [Review.id, Review.movie_id, Review.user_id, Review.rating, Review.text, Review.approved, Review.created_at, Review.updated_at]
     column_searchable_list = [Review.text]
-    column_sortable_list = [Review.id, Review.rating, Review.created_at, Review.is_approved]
+    column_sortable_list = [Review.id, Review.rating, Review.created_at, Review.approved]
     column_default_sort = [(Review.created_at, True)]
     
     # Form customization
