@@ -18,7 +18,5 @@ class User(Base):
     reviews: Mapped[List["Review"]] = relationship("Review", back_populates="user", cascade="all, delete-orphan")
     favorites: Mapped[List["Favorite"]] = relationship("Favorite", back_populates="user", cascade="all, delete-orphan")
 
-    extend_existing = True
-
     def __repr__(self):
         return f"{self.__class__.__name__}(id={self.id}, username={self.username})"
