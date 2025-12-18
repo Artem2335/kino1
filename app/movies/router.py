@@ -21,6 +21,11 @@ class MovieUpdate(BaseModel):
     poster_url: Optional[str] = None
 
 
+class ReviewCreate(BaseModel):
+    text: str
+    rating: Optional[int] = None
+
+
 # ========== MOVIES ==========
 
 @router.get("/")
@@ -119,7 +124,62 @@ def get_movie_reviews(movie_id: int, approved_only: bool = Query(True)):
     return reviews
 
 
+@router.post("/{movie_id}/reviews")
+def create_movie_review(movie_id: int, user_id: int, data: ReviewCreate):
+    """Create a review for a specific movie"""
+    movie = db.get_movie_by_id(movie_id)
+    if not movie:
+        raise HTTPException(status_code=404, detail="Movie not found")
+    
+    review = db.create_review(
+        movie_id=movie_id,
+        user_id=user_id,
+        text=data.text,
+        rating=data.rating
+    )
+    return review
+
+
+# ========== RATING STATS FOR MOVIES ==========
+
+@router.get("/{movie_id}/rating-stats")
+def get_movie_rating_stats(movie_id: int):
+    """Get rating statistics for a specific movie"""
+    movie = db.get_movie_by_id(movie_id)
+    if not movie:
+        raise HTTPException(status_code=404, detail="Movie not found")
+    
+    stats = db.get_rating_stats(movie_id)
+    return stats
+
+
 # ========== FAVORITES FOR MOVIES ==========
+
+@router.post("/{movie_id}/favorites")
+def add_movie_to_favorites(movie_id: int, user_id: int):
+    """Add a movie to user's favorites"""
+    movie = db.get_movie_by_id(movie_id)
+    if not movie:
+        raise HTTPException(status_code=404, detail="Movie not found")
+    
+    result = db.add_favorite(movie_id, user_id)
+    
+    if "error" in result:
+        raise HTTPException(status_code=400, detail=result["error"])
+    
+    return result
+
+
+@router.delete("/{movie_id}/favorites")
+def remove_movie_from_favorites(movie_id: int, user_id: int):
+    """Remove a movie from user's favorites"""
+    movie = db.get_movie_by_id(movie_id)
+    if not movie:
+        raise HTTPException(status_code=404, detail="Movie not found")
+    
+    result = db.remove_favorite(movie_id, user_id)
+    return result
+
 
 @router.get("/user/{user_id}/favorites")
 def get_user_favorites(user_id: int):
