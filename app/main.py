@@ -11,6 +11,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from app.users.router import router as router_users
 from app.movies.router import router as router_movies
+from app.reviews.router import router as router_reviews
+from app.favorites.router import router as router_favorites
 from app import db
 from app.admin import setup_admin
 import os
@@ -51,6 +53,8 @@ app.add_middleware(
 # Include routers FIRST (before static files)
 app.include_router(router_users)
 app.include_router(router_movies)
+app.include_router(router_reviews)
+app.include_router(router_favorites)
 
 # Setup SQLAdmin
 setup_admin(app)
