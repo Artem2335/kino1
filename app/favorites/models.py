@@ -12,7 +12,5 @@ class Favorite(Base):
     movie: Mapped["Movie"] = relationship("Movie", back_populates="favorites", foreign_keys=[movie_id])
     user: Mapped["User"] = relationship("User", back_populates="favorites", foreign_keys=[user_id])
 
-    extend_existing = True
-
     def __repr__(self):
         return f"{self.__class__.__name__}(id={self.id}, movie_id={self.movie_id})"
