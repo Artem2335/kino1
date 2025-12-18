@@ -104,3 +104,25 @@ def delete_movie(movie_id: int):
     
     db.delete_movie(movie_id)
     return {"status": "deleted"}
+
+
+# ========== REVIEWS FOR MOVIES ==========
+
+@router.get("/{movie_id}/reviews")
+def get_movie_reviews(movie_id: int, approved_only: bool = Query(True)):
+    """Get reviews for a specific movie"""
+    movie = db.get_movie_by_id(movie_id)
+    if not movie:
+        raise HTTPException(status_code=404, detail="Movie not found")
+    
+    reviews = db.get_movie_reviews(movie_id, approved_only=approved_only)
+    return reviews
+
+
+# ========== FAVORITES FOR MOVIES ==========
+
+@router.get("/user/{user_id}/favorites")
+def get_user_favorites(user_id: int):
+    """Get user's favorite movies"""
+    favorites = db.get_user_favorites(user_id)
+    return favorites
