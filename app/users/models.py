@@ -1,4 +1,4 @@
-from sqlalchemy import text, String
+from sqlalchemy import String, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base, str_uniq, int_pk
 from typing import List
@@ -10,9 +10,9 @@ class User(Base):
     password: Mapped[str]
     username: Mapped[str]
 
-    is_user: Mapped[bool] = mapped_column(default=True, server_default=text('true'), nullable=False)
-    is_moderator: Mapped[bool] = mapped_column(default=False, server_default=text('false'), nullable=False)
-    is_admin: Mapped[bool] = mapped_column(default=False, server_default=text('false'), nullable=False)
+    is_user: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    is_moderator: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     # Relationships
     reviews: Mapped[List["Review"]] = relationship("Review", back_populates="user", cascade="all, delete-orphan", foreign_keys="Review.user_id")
