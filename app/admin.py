@@ -3,7 +3,6 @@
 from sqladmin import Admin, ModelView
 from sqladmin.authentication import AuthenticationBackend
 from starlette.requests import Request
-from starlette.responses import RedirectResponse
 from app.database import engine
 from app.users.models import User
 from app.movies.models import Movie
@@ -159,8 +158,8 @@ def setup_admin(app: FastAPI) -> None:
         base_url='/admin',
     )
     
-    # Register model views
-    admin.register_model(UserAdmin)
-    admin.register_model(MovieAdmin)
-    admin.register_model(ReviewAdmin)
-    admin.register_model(FavoriteAdmin)
+    # Register model views using the Admin instance
+    UserAdmin.session_maker = admin._sessionmaker
+    MovieAdmin.session_maker = admin._sessionmaker
+    ReviewAdmin.session_maker = admin._sessionmaker
+    FavoriteAdmin.session_maker = admin._sessionmaker
