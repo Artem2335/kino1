@@ -52,15 +52,18 @@ class UserAdmin(ModelView, model=User):
     name_plural = 'Users'
     icon = 'fa-solid fa-user'
     
-    # Column visibility
-    column_list = [User.id, User.username, User.email, User.is_admin, User.is_moderator, User.is_user, User.created_at]
-    column_details_list = [User.id, User.username, User.email, User.password, User.is_admin, User.is_moderator, User.is_user, User.created_at, User.updated_at]
+    # Column visibility in list view (exclude password and relationships)
+    column_exclude_list = [User.password, User.reviews, User.favorites]
+    
+    # Columns to show in detail view
+    column_details_exclude_list = [User.password, User.reviews, User.favorites]
+    
+    # Searchable columns
     column_searchable_list = [User.username, User.email]
+    
+    # Sortable columns
     column_sortable_list = [User.id, User.username, User.created_at]
     column_default_sort = [(User.created_at, True)]
-    
-    # Exclude password from list view for security
-    column_exclude_list = [User.password]
     
     # Form customization
     form_excluded_columns = [User.created_at, User.updated_at, User.reviews, User.favorites]
@@ -73,9 +76,11 @@ class MovieAdmin(ModelView, model=Movie):
     name_plural = 'Movies'
     icon = 'fa-solid fa-film'
     
-    # Column visibility
-    column_list = [Movie.id, Movie.title, Movie.genre, Movie.year, Movie.created_at]
-    column_details_list = [Movie.id, Movie.title, Movie.description, Movie.genre, Movie.year, Movie.poster_url, Movie.created_at, Movie.updated_at]
+    # Exclude relationships from display
+    column_exclude_list = [Movie.reviews, Movie.favorites]
+    column_details_exclude_list = [Movie.reviews, Movie.favorites]
+    
+    # Searchable and sortable columns
     column_searchable_list = [Movie.title, Movie.genre]
     column_sortable_list = [Movie.id, Movie.title, Movie.year, Movie.created_at]
     column_default_sort = [(Movie.created_at, True)]
@@ -96,9 +101,11 @@ class ReviewAdmin(ModelView, model=Review):
     name_plural = 'Reviews'
     icon = 'fa-solid fa-star'
     
-    # Column visibility
-    column_list = [Review.id, Review.movie_id, Review.user_id, Review.rating, Review.approved, Review.created_at]
-    column_details_list = [Review.id, Review.movie_id, Review.user_id, Review.rating, Review.text, Review.approved, Review.created_at, Review.updated_at]
+    # Exclude relationships
+    column_exclude_list = []
+    column_details_exclude_list = []
+    
+    # Searchable and sortable columns
     column_searchable_list = [Review.text]
     column_sortable_list = [Review.id, Review.rating, Review.created_at, Review.approved]
     column_default_sort = [(Review.created_at, True)]
@@ -119,9 +126,11 @@ class FavoriteAdmin(ModelView, model=Favorite):
     name_plural = 'Favorites'
     icon = 'fa-solid fa-heart'
     
-    # Column visibility
-    column_list = [Favorite.id, Favorite.user_id, Favorite.movie_id, Favorite.created_at]
-    column_details_list = [Favorite.id, Favorite.user_id, Favorite.movie_id, Favorite.created_at]
+    # Exclude relationships
+    column_exclude_list = []
+    column_details_exclude_list = []
+    
+    # Sortable columns
     column_sortable_list = [Favorite.id, Favorite.created_at]
     column_default_sort = [(Favorite.created_at, True)]
     
