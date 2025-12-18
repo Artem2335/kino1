@@ -2,7 +2,10 @@ from fastapi import APIRouter, HTTPException, Query, Depends, Request
 from pydantic import BaseModel
 from typing import Optional, List
 from app import db
-import jwt
+try:
+    import jwt
+except ImportError:
+    jwt = None
 from datetime import datetime
 
 router = APIRouter(prefix="/api/movies", tags=["movies"])
@@ -35,6 +38,8 @@ def get_current_user(request: Request):
         raise HTTPException(status_code=401, detail="Not authenticated")
     
     try:
+        if jwt is None:
+            raise HTTPException(status_code=500, detail="JWT module not available")
         payload = jwt.decode(token, "your-secret-key", algorithms=["HS256"])
         user_id = payload.get("user_id")
         if user_id is None:
@@ -44,6 +49,8 @@ def get_current_user(request: Request):
         raise HTTPException(status_code=401, detail="Token expired")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
+    except Exception as e:
+        raise HTTPException(status_code=401, detail=f"Token error: {str(e)}")
 
 
 # ========== MOVIES ==========
