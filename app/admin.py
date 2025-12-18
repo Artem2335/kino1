@@ -45,9 +45,9 @@ class AdminUser(AuthenticationBackend):
         return True
 
 
-class UserAdmin(ModelView):
+class UserAdmin(ModelView, model=User):
     """Admin view for User model."""
-    model = User
+    
     name = 'User'
     name_plural = 'Users'
     icon = 'fa-solid fa-user'
@@ -62,16 +62,16 @@ class UserAdmin(ModelView):
     column_searchable_list = [User.username, User.email]
     
     # Sortable columns
-    column_sortable_list = [User.id, User.username, User.created_at]
-    column_default_sort = [(User.created_at, True)]
+    column_sortable_list = [User.id, User.username]
+    column_default_sort = [(User.id, True)]
     
     # Form customization
-    form_excluded_columns = [User.created_at, User.updated_at, User.reviews, User.favorites]
+    form_excluded_columns = [User.reviews, User.favorites]
 
 
-class MovieAdmin(ModelView):
+class MovieAdmin(ModelView, model=Movie):
     """Admin view for Movie model."""
-    model = Movie
+    
     name = 'Movie'
     name_plural = 'Movies'
     icon = 'fa-solid fa-film'
@@ -82,50 +82,36 @@ class MovieAdmin(ModelView):
     
     # Searchable and sortable columns
     column_searchable_list = [Movie.title, Movie.genre]
-    column_sortable_list = [Movie.id, Movie.title, Movie.year, Movie.created_at]
-    column_default_sort = [(Movie.created_at, True)]
+    column_sortable_list = [Movie.id, Movie.title, Movie.year]
+    column_default_sort = [(Movie.id, True)]
     
-    # Form customization - fix: exclude relationships and timestamps properly
-    form_excluded_columns = [Movie.created_at, Movie.updated_at, Movie.reviews, Movie.favorites]
+    # Form customization
+    form_excluded_columns = [Movie.reviews, Movie.favorites]
 
 
-class ReviewAdmin(ModelView):
+class ReviewAdmin(ModelView, model=Review):
     """Admin view for Review model."""
-    model = Review
+    
     name = 'Review'
     name_plural = 'Reviews'
     icon = 'fa-solid fa-star'
     
-    # Exclude relationships properly
-    column_exclude_list = []
-    column_details_exclude_list = []
-    
     # Searchable and sortable columns
     column_searchable_list = [Review.text]
-    column_sortable_list = [Review.id, Review.rating, Review.created_at, Review.approved]
-    column_default_sort = [(Review.created_at, True)]
-    
-    # Form customization - fix: exclude relationships and timestamps properly
-    form_excluded_columns = [Review.created_at, Review.updated_at]
+    column_sortable_list = [Review.id, Review.rating, Review.approved]
+    column_default_sort = [(Review.id, True)]
 
 
-class FavoriteAdmin(ModelView):
+class FavoriteAdmin(ModelView, model=Favorite):
     """Admin view for Favorite model."""
-    model = Favorite
+    
     name = 'Favorite'
     name_plural = 'Favorites'
     icon = 'fa-solid fa-heart'
     
-    # Exclude relationships
-    column_exclude_list = []
-    column_details_exclude_list = []
-    
     # Sortable columns
-    column_sortable_list = [Favorite.id, Favorite.created_at]
-    column_default_sort = [(Favorite.created_at, True)]
-    
-    # Form customization
-    form_excluded_columns = [Favorite.created_at]
+    column_sortable_list = [Favorite.id]
+    column_default_sort = [(Favorite.id, True)]
 
 
 def setup_admin(app: FastAPI) -> None:
