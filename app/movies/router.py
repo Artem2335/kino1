@@ -140,6 +140,21 @@ def create_movie_review(movie_id: int, user_id: int, data: ReviewCreate):
     return review
 
 
+@router.delete("/reviews/{review_id}")
+def delete_movie_review(review_id: int, user_id: int):
+    """Delete a review (author or admin)"""
+    review = db.get_review_by_id(review_id)
+    if not review:
+        raise HTTPException(status_code=404, detail="Review not found")
+    
+    # Check if user is the author
+    if review['user_id'] != user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this review")
+    
+    db.delete_review(review_id)
+    return {"status": "deleted"}
+
+
 # ========== RATING STATS FOR MOVIES ==========
 
 @router.get("/{movie_id}/rating-stats")
