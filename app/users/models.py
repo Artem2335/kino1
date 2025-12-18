@@ -15,8 +15,8 @@ class User(Base):
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     # Relationships
-    reviews: Mapped[List["Review"]] = relationship("Review", back_populates="user", cascade="all, delete-orphan", foreign_keys="Review.user_id")
-    favorites: Mapped[List["Favorite"]] = relationship("Favorite", back_populates="user", cascade="all, delete-orphan", foreign_keys="Favorite.user_id")
+    reviews: Mapped[List["Review"]] = relationship("Review", back_populates="user", cascade="all, delete-orphan")
+    favorites: Mapped[List["Favorite"]] = relationship("Favorite", back_populates="user", cascade="all, delete-orphan")
 
     extend_existing = True
 
