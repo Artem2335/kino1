@@ -45,9 +45,9 @@ class AdminUser(AuthenticationBackend):
         return True
 
 
-class UserAdmin(ModelView, model=User):
+class UserAdmin(ModelView):
     """Admin view for User model."""
-    
+    model = User
     name = 'User'
     name_plural = 'Users'
     icon = 'fa-solid fa-user'
@@ -69,9 +69,9 @@ class UserAdmin(ModelView, model=User):
     form_excluded_columns = [User.created_at, User.updated_at, User.reviews, User.favorites]
 
 
-class MovieAdmin(ModelView, model=Movie):
+class MovieAdmin(ModelView):
     """Admin view for Movie model."""
-    
+    model = Movie
     name = 'Movie'
     name_plural = 'Movies'
     icon = 'fa-solid fa-film'
@@ -85,23 +85,18 @@ class MovieAdmin(ModelView, model=Movie):
     column_sortable_list = [Movie.id, Movie.title, Movie.year, Movie.created_at]
     column_default_sort = [(Movie.created_at, True)]
     
-    # Form customization
+    # Form customization - fix: exclude relationships and timestamps properly
     form_excluded_columns = [Movie.created_at, Movie.updated_at, Movie.reviews, Movie.favorites]
-    
-    # Make description a larger text field
-    form_overrides = {
-        'description': 'TextAreaField',
-    }
 
 
-class ReviewAdmin(ModelView, model=Review):
+class ReviewAdmin(ModelView):
     """Admin view for Review model."""
-    
+    model = Review
     name = 'Review'
     name_plural = 'Reviews'
     icon = 'fa-solid fa-star'
     
-    # Exclude relationships
+    # Exclude relationships properly
     column_exclude_list = []
     column_details_exclude_list = []
     
@@ -110,18 +105,13 @@ class ReviewAdmin(ModelView, model=Review):
     column_sortable_list = [Review.id, Review.rating, Review.created_at, Review.approved]
     column_default_sort = [(Review.created_at, True)]
     
-    # Form customization
+    # Form customization - fix: exclude relationships and timestamps properly
     form_excluded_columns = [Review.created_at, Review.updated_at]
-    
-    # Make text a larger text field
-    form_overrides = {
-        'text': 'TextAreaField',
-    }
 
 
-class FavoriteAdmin(ModelView, model=Favorite):
+class FavoriteAdmin(ModelView):
     """Admin view for Favorite model."""
-    
+    model = Favorite
     name = 'Favorite'
     name_plural = 'Favorites'
     icon = 'fa-solid fa-heart'
@@ -148,7 +138,7 @@ def setup_admin(app: FastAPI) -> None:
     # Setup authentication with secret_key
     authentication_backend = AdminUser(secret_key=SECRET_KEY)
     
-    # Create admin instance - models are registered via class inheritance
+    # Create admin instance
     admin = Admin(
         app=app,
         engine=engine,
