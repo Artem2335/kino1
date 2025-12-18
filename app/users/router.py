@@ -1,10 +1,18 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, EmailStr
 from app import db
 from passlib.context import CryptContext
+from datetime import datetime, timedelta
+import jwt
 import json
 
 router = APIRouter(prefix="/api/users", tags=["users"])
+
+# JWT Configuration
+SECRET_KEY = "your-secret-key"  # TODO: Move to .env
+ALGORITHM = "HS256"
+TOKEN_EXPIRE_HOURS = 24
 
 # Password hashing context with flexible schemes to support old passwords
 pwd_context = CryptContext(
@@ -50,8 +58,19 @@ def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
 
+def create_jwt_token(user_id: int) -> str:
+    """Create a JWT token for a user"""
+    payload = {
+        "user_id": user_id,
+        "exp": datetime.utcnow() + timedelta(hours=TOKEN_EXPIRE_HOURS),
+        "iat": datetime.utcnow()
+    }
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    return token
+
+
 @router.post("/register")
-def register(data: UserRegister):
+def register(data: UserRegister, response: Response):
     """Register a new user"""
     # Check if user already exists
     existing = db.get_user_by_email(data.email)
@@ -62,11 +81,24 @@ def register(data: UserRegister):
     hashed_password = hash_password(data.password)
     
     user = db.create_user(data.email, hashed_password, data.username)
+    
+    # Generate JWT token
+    token = create_jwt_token(user['id'])
+    
+    # Set token in cookie
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        max_age=TOKEN_EXPIRE_HOURS * 3600,
+        httponly=True,
+        samesite="lax"
+    )
+    
     return user
 
 
 @router.post("/login")
-def login(data: UserLogin):
+def login(data: UserLogin, response: Response):
     """Login user by username"""
     print(f"Login attempt with: {json.dumps({'username': data.username, 'password': '***'})}")
     
@@ -79,6 +111,18 @@ def login(data: UserLogin):
     # Verify password against hash
     if not verify_password(data.password, user['password']):
         raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Generate JWT token
+    token = create_jwt_token(user['id'])
+    
+    # Set token in cookie
+    response.set_cookie(
+        key="access_token",
+        value=token,
+        max_age=TOKEN_EXPIRE_HOURS * 3600,
+        httponly=True,
+        samesite="lax"
+    )
     
     return user
 
