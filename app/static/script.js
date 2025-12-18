@@ -36,6 +36,7 @@ async function apiCall(method, endpoint, data = null) {
   const opts = {
     method,
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include', // IMPORTANT: Include cookies (JWT token)
   };
   if (data) opts.body = JSON.stringify(data);
 
@@ -237,11 +238,11 @@ async function toggleFavorite(event, movieId) {
     const isFavorite = button.classList.contains('kv-fav-btn-active');
     
     if (isFavorite) {
-      await apiCall('DELETE', `/movies/${movieId}/favorites?user_id=${currentUser.id}`);
+      await apiCall('DELETE', `/movies/${movieId}/favorites`);
       button.classList.remove('kv-fav-btn-active');
       button.textContent = '☆';
     } else {
-      await apiCall('POST', `/movies/${movieId}/favorites?user_id=${currentUser.id}`);
+      await apiCall('POST', `/movies/${movieId}/favorites`);
       button.classList.add('kv-fav-btn-active');
       button.textContent = '★';
     }
@@ -405,7 +406,7 @@ async function submitReview(mid) {
   }
 
   try {
-    await apiCall('POST', `/movies/${mid}/reviews?user_id=${currentUser.id}`, {
+    await apiCall('POST', `/movies/${mid}/reviews`, {
       text: txt,
       rating: currentMovieRating,
     });
@@ -439,7 +440,7 @@ async function removeFavorite(movieId) {
   if (!currentUser) return;
   
   try {
-    await apiCall('DELETE', `/movies/${movieId}/favorites?user_id=${currentUser.id}`);
+    await apiCall('DELETE', `/movies/${movieId}/favorites`);
     renderProfile();
     renderFilms(); // Обновим звёзды на карточках
   } catch (e) {
